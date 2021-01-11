@@ -24,6 +24,6 @@ Alimentation possible sur batterie Lipo (3.7V max) ou en utilisant un régulateu
 
 ![](https://github.com/armel/RRFDisplayTiny/blob/main/img/schema.png)
 
-Voir dans le dossier ``img`` pour vous aider à cabler l'ensemble.
+Voir dans le dossier ``img`` pour vous aider à cabler l'ensemble. J'ai pris 2 photos qui pourront vous aider, je l'espère. 
 
 88 et 73 de F4HWN Armel.
