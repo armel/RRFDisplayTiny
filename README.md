@@ -22,7 +22,7 @@ Alimentation possible sur batterie Lipo (3.7V max) ou en utilisant un régulateu
 
 # Cablage
 
-![](https://raw.githubusercontent.com/armel/RRFDisplayTiny/master/img/schema.png)
+![](https://github.com/armel/RRFDisplayTiny/blob/main/img/schema.png)
 
 Voir dans le dossier ``img`` pour vous aider à cabler l'ensemble.
 
