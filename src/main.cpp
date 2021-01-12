@@ -68,6 +68,15 @@ String getValue(String data, char separator, int index)
   return found>index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
 
+int interpolation(int value, int in_min, int in_max, int out_min, int out_max) {
+  if ((in_max - in_min) != 0) {
+    return int((value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
+  }
+  else {
+    return 0;
+  }
+}
+
 void setup() {
 
   // Initialising the UI will init the display too.
@@ -121,7 +130,7 @@ void loop() {
 
   if ((WiFi.status() == WL_CONNECTED)) { // check the current connection status
 
-    http.begin(endpoint[buttonRoom]); // specify the URL
+    http.begin(client, endpoint[buttonRoom]); // specify the URL
     http.setTimeout(750);
     int httpCode = http.GET();  // make the request
 
@@ -204,7 +213,7 @@ void loop() {
 
             display.drawString(64, 18, tmp_str);
           }
-          else if (step <= 30) {
+          else if (step <= 20) {
             display.clear();
             int x = 4;
             int tmp = 0;
@@ -256,11 +265,11 @@ void loop() {
 
           display.drawString(64, 19, tmp_str);
 
-          if (salon == "RRF") {
-            tot = map(tot, 0, 150, 0, 127);
+          if (strcmp ("RRF", salon) == 0) {
+            tot = map(tot, 0, 150, 0, 100);
           }
           else {
-            tot = map(tot, 0, 300, 0, 127);
+            tot = map(tot, 0, 300, 0, 100);
           }
 
           display.drawProgressBar(0, 14, 127, 6, tot);
@@ -272,7 +281,7 @@ void loop() {
         step += 1;
         brightness += (direction * 5);
 
-        if (step > 30) {
+        if (step > 20) {
           step = 0;
           direction = - direction;
         }
