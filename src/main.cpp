@@ -49,6 +49,7 @@ String payload_old;
 int step = 1;
 int direction = 1;
 int brightness = 16;
+int alternance = 0;
 
 String getValue(String data, char separator, int index)
 {
@@ -102,14 +103,12 @@ void loop() {
   HTTPClient http;
   DynamicJsonDocument doc(8192);
 
-  const char *salon, *date, *indicatif, *emission;
-  const char *last_h_1, *last_c_1, *last_d_1;
-  const char *last_h_2, *last_c_2, *last_d_2;
-  const char *last_h_3, *last_c_3, *last_d_3;
+  const char *salon, *emission;
+  const char *last_c_1, *last_d_1;
+  const char *legende[] = {"00", "06", "12", "18", "23"};
 
-  int tot = 0, link_total = 0, link_actif = 0, tx_total = 0, max_level = 0, tx[24] = {0};
+  int tot = 0, link_total = 0, tx_total = 0, max_level = 0, tx[24] = {0};
   int optimize = 0;
-  int tot_bis = 0;
 
   buttonState = digitalRead(BUTTON_PIN);
   if (buttonState == LOW) {
@@ -120,7 +119,6 @@ void loop() {
     buttonRoom = 0;
   }
 
-  
   if ((WiFi.status() == WL_CONNECTED)) { // check the current connection status
 
     http.begin(endpoint[buttonRoom]); // specify the URL
@@ -146,27 +144,24 @@ void loop() {
         display.clear();
 
         salon = doc["abstract"][0]["Salon"];
-        date = doc["abstract"][0]["Date"];
         emission = doc["abstract"][0]["Emission cumulée"];
         link_total = doc["abstract"][0]["Links connectés"];
-        link_actif = doc["abstract"][0]["Links actifs"];
         tx_total = doc["abstract"][0]["TX total"];
 
-        indicatif = doc["transmit"][0]["Indicatif"];
         tot = doc["transmit"][0]["TOT"];
 
-        last_h_1 = doc["last"][0]["Heure"];
         last_c_1 = doc["last"][0]["Indicatif"];
         last_d_1 = doc["last"][0]["Durée"];
-
-        last_h_2 = doc["last"][1]["Heure"];
-        last_c_2 = doc["last"][1]["Indicatif"];
-        last_d_2 = doc["last"][1]["Durée"];
-
-        last_h_3 = doc["last"][2]["Heure"];
-        last_c_3 = doc["last"][2]["Indicatif"];
-        last_d_3 = doc["last"][2]["Durée"];
     
+        max_level = 0;
+        for (uint8_t i = 0; i < 24; i++) {
+          int tmp = doc["activity"][i]["TX"];
+          if (tmp > max_level) {
+            max_level = tmp;
+          }
+          tx[i] = tmp;
+        }
+
         if (tot == 0) { // if no transmit
           digitalWrite(LED_BUILTIN, HIGH);
           display.setBrightness(brightness);
@@ -191,7 +186,7 @@ void loop() {
             tmp_str = "BF ";
             tmp_str += emission;
 
-            display.drawString(64, 15, tmp_str);
+            display.drawString(64, 18, tmp_str);
           }
           else if (step <= 10) {
             display.setFont(Dialog_bold_14);
@@ -199,7 +194,7 @@ void loop() {
             tmp_str = "TX ";
             tmp_str += tx_total;
 
-            display.drawString(64, 15, tmp_str);
+            display.drawString(64, 18, tmp_str);
           }
           else if (step <= 15) {
             display.setFont(Dialog_bold_14);
@@ -207,9 +202,36 @@ void loop() {
             tmp_str = "Links ";
             tmp_str += link_total;
 
-            display.drawString(64, 15, tmp_str);
+            display.drawString(64, 18, tmp_str);
+          }
+          else if (step <= 30) {
+            display.clear();
+            int x = 4;
+            int tmp = 0;
+            
+            for (uint8_t j = 0; j < 24; j++) {
+              if (tx[j] != 0) {
+                tmp = map(tx[j], 0, max_level, 0, 18);
+                display.fillRect(x, 21 - tmp, 3, tmp);
+              }
+              x += 5;
+            }
+    
+            for (uint8_t j = 4; j < 124; j += 5) {
+              display.drawLine(j, 22, j + 3, 22);
+            }
+
+            display.setFont(ArialMT_Plain_10);
+            for (uint8_t j = 0; j < 5; j++) {
+              display.drawString(j * 30, 22, legende[j]);
+            }
           }
           
+          if (step <= 15) {
+            for(int i = 0; i < display.width(); i += 2) {
+              display.drawLine(i,   16, i ,   16);
+            }
+          }
         }
         else {
           digitalWrite(LED_BUILTIN, LOW);
@@ -224,12 +246,24 @@ void loop() {
           display.drawString(64, 0, tmp_clean);
 
           tmp_str = last_d_1;
-          display.drawString(64, 15, tmp_str);
-        }
 
-        for(int i = 0; i < display.width(); i += 2) {
-          display.drawLine(i,   16, i ,   16);
-          //display.drawLine(i,  31, i ,  31);
+          if (alternance == 0) {
+            alternance = 1;
+          }
+          else {
+            alternance = 0;
+          }
+
+          display.drawString(64, 19, tmp_str);
+
+          if (salon == "RRF") {
+            tot = map(tot, 0, 150, 0, 127);
+          }
+          else {
+            tot = map(tot, 0, 300, 0, 127);
+          }
+
+          display.drawProgressBar(0, 14, 127, 6, tot);
         }
 
         //display.drawRect(0, 0, 128, 32);
@@ -238,7 +272,7 @@ void loop() {
         step += 1;
         brightness += (direction * 5);
 
-        if (step > 15) {
+        if (step > 30) {
           step = 0;
           direction = - direction;
         }
