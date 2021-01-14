@@ -154,6 +154,7 @@ void loop() {
 
         salon = doc["abstract"][0]["Salon"];
         emission = doc["abstract"][0]["Emission cumulée"];
+
         link_total = doc["abstract"][0]["Links connectés"];
         tx_total = doc["abstract"][0]["TX total"];
 
@@ -182,7 +183,7 @@ void loop() {
           tmp_str = getValue(date, ' ', 4);
           display.drawString(128, 2, tmp_str);
           */
-         
+
           display.setFont(Dialog_bold_14);
           display.setTextAlignment(TEXT_ALIGN_CENTER);
 
@@ -220,19 +221,19 @@ void loop() {
             
             for (uint8_t j = 0; j < 24; j++) {
               if (tx[j] != 0) {
-                tmp = map(tx[j], 0, max_level, 0, 18);
-                display.fillRect(x, 21 - tmp, 3, tmp);
+                tmp = map(tx[j], 0, max_level, 0, 21);
+                display.fillRect(x, 23 - tmp, 2, tmp);
               }
               x += 5;
             }
     
             for (uint8_t j = 4; j < 124; j += 5) {
-              display.drawLine(j, 22, j + 3, 22);
+              display.drawLine(j, 24, j + 3, 24);
             }
 
-            display.setFont(ArialMT_Plain_10);
+            display.setFont(TomThumb4x6);
             for (uint8_t j = 0; j < 5; j++) {
-              display.drawString(j * 30, 22, legende[j]);
+              display.drawString(j * 30, 26, legende[j]);
             }
           }
           
